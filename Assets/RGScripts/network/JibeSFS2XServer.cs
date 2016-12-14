@@ -1,6 +1,6 @@
 ﻿/* Copyright (c) 2009-11, ReactionGrid Inc. http://reactiongrid.com
- * See License.txt for full licence information. 
- * 
+ * See License.txt for full licence information.
+ *
  * JibeSmartFoxServer.cs Revision 1.3.1105.12
  * Provides Jibe implementation on SmartFox2X platform */
 
@@ -13,6 +13,7 @@ namespace ReactionGrid.Jibe
     using System.Text;
     using Sfs2X;
     using Sfs2X.Core;
+	using Sfs2X.Util;
     using Sfs2X.Entities;
     using Sfs2X.Entities.Data;
     using Sfs2X.Entities.Variables;
@@ -22,7 +23,7 @@ namespace ReactionGrid.Jibe
     public static class SmartFox2MessageType
     {
         public const string Transform = "t";          // "t" - player transform data
-        public const string ForceSend = "f";          // "f" - means force our local player to send his transform  
+        public const string ForceSend = "f";          // "f" - means force our local player to send his transform
         public const string Animation = "a";          // "a" - for animation message received
         public const string VisualAppearance = "v";   // "v" - for visual appearance message
         public const string Name = "n";               // "n" - for name message
@@ -42,6 +43,7 @@ namespace ReactionGrid.Jibe
         private JibePlayer localPlayer;
         private JibeDebugLevel _debugLevel = JibeDebugLevel.ALL;
         private SmartFox smartFox;
+
         private string _dressingRoomName;
         private bool _roomAddAttempt;
 
@@ -81,7 +83,7 @@ namespace ReactionGrid.Jibe
             _dynamicRooms = dynamicRooms;
             _debugLevel = debugLevel;
 			_blueboxPort = blueBoxPort;
-			
+
             this.localPlayer = new JibePlayer(-1);
             try
             {
@@ -90,15 +92,16 @@ namespace ReactionGrid.Jibe
                 //smartFox.ThreadSafeMode = true;
 				#if UNITY_WEBGL
 				_serverPort = 8888;
+				Debug.Log("_serverPort: " + _serverPort);
 				#endif
 
-				// Initialize SFS2X
-				#if UNITY_WEBGL
+				// Initialize SFS2X client and add listeners
+				// WebGL build uses a different constructor
+				#if !UNITY_WEBGL
 				smartFox = new SmartFox();
 				#else
-				smartFox = new SmartFox();
+				smartFox = new SmartFox(UseWebSocket.WS);
 				#endif
-				smartFox.ThreadSafeMode = true;
 
 			}
             catch (Exception e)
@@ -114,7 +117,8 @@ namespace ReactionGrid.Jibe
                 if (!smartFox.IsConnected)
                 {
                     this.DebugReturn("Attempting to connect " + _serverAddress + ":" + _serverPort);
-                    smartFox.Connect(_serverAddress, _serverPort);
+                   smartFox.Connect(_serverAddress, _serverPort);
+
                     if (!_reconnectAttempt)
                     {
                         SubscribeEvents();
@@ -174,7 +178,7 @@ namespace ReactionGrid.Jibe
                 else
                 {
                     this.DebugReturn("User entering Dressing Room from live scene");
-                    // a hardcoded value but a constant concept:                       
+                    // a hardcoded value but a constant concept:
                     if (string.IsNullOrEmpty(_dressingRoomName))
                     {
                         _roomAddAttempt = true;
@@ -245,7 +249,7 @@ namespace ReactionGrid.Jibe
         }
         protected override void SendOutgoingMessages()
         {
-            // SFS2X has no discrete send and receive, so only need to call ProcessEventQueue once per update loop. 
+            // SFS2X has no discrete send and receive, so only need to call ProcessEventQueue once per update loop.
         }
 
         #endregion
@@ -317,7 +321,7 @@ namespace ReactionGrid.Jibe
                 else
                 {
                     this.DebugReturn("Logged in successfully - Configuring Local Player");
-                    // remove any old instances of player from the scene                
+                    // remove any old instances of player from the scene
                     ClearRemotePlayers();
                     // update player ID
                     if (smartFox.MySelf == null)
@@ -376,7 +380,7 @@ namespace ReactionGrid.Jibe
         void OnJoinRoomError(BaseEvent evt)
         {
             string message = (string)evt.Params["errorMessage"];
-            this.DebugReturn(_debugLevel, "ERROR joining room: " + message, JibeErrorLevel.WARNING);            
+            this.DebugReturn(_debugLevel, "ERROR joining room: " + message, JibeErrorLevel.WARNING);
             OnRoomJoinResult(new RoomJoinResultEventArgs(false, message + " Default room is configured as " + _defaultRoom + " and dynamic room support is set enabled=" + _dynamicRooms));
         }
         void OnRoomCreateError(BaseEvent evt)
@@ -405,7 +409,7 @@ namespace ReactionGrid.Jibe
             if (user != null)
             {
                 this.DebugReturn("User " + user.Name + ", userId: " + user.Id + " leaving room " + room.Name);
-            
+
             // This will be invoked when a remote player leaves the room
 
                 if (this._jibePlayers.ContainsKey(user.Id))
@@ -469,7 +473,7 @@ namespace ReactionGrid.Jibe
             string error = (string)evt.Params["errorMessage"];
             this.DebugReturn("Login error: " + error);
             OnLoginResult(new LoginResultEventArgs(false, error));
-            return;           
+            return;
         }
 
         void OnLogout(BaseEvent evt)
@@ -479,15 +483,15 @@ namespace ReactionGrid.Jibe
         }
         void OnPublicMessage(BaseEvent evt)
         {
-            // Public chat message handler            
+            // Public chat message handler
             try
             {
                 string message = (string)evt.Params["message"];
-                User sender = (User)evt.Params["sender"];                
+                User sender = (User)evt.Params["sender"];
                 if (sender.Id != localPlayer.PlayerID)
                 {
                     IJibePlayer remotePlayer = GetJibePlayerFromSFS2XUser(sender);
-                    // If it's not myself                    
+                    // If it's not myself
                     this.OnNewChatMessage(new ChatEventArgs(remotePlayer, message));
                 }
 
@@ -558,7 +562,7 @@ namespace ReactionGrid.Jibe
 
         private void StorePlayerSettings()
         {
-            // Keep SmartFox server up-to-date with information about the current player     
+            // Keep SmartFox server up-to-date with information about the current player
             List<UserVariable> userVars = new List<UserVariable>();
             userVars.Add(new SFSUserVariable("name", localPlayer.Name));
             userVars.Add(new SFSUserVariable("hair", localPlayer.Hair));
@@ -675,7 +679,7 @@ namespace ReactionGrid.Jibe
         public override void SendTransform(float posX, float posY, float posZ, float rotX, float rotY, float rotZ, float rotW)
         {
             SFSObject data = new SFSObject();
-            data.PutUtfString("_cmd", SmartFox2MessageType.Transform);  //contains transform sync data. 
+            data.PutUtfString("_cmd", SmartFox2MessageType.Transform);  //contains transform sync data.
             data.PutFloat("x", posX);
             data.PutFloat("y", posY);
             data.PutFloat("z", posZ);
@@ -798,7 +802,7 @@ namespace ReactionGrid.Jibe
                 this.DebugReturn(_debugLevel, "Failed to send private chat message! " + ex.Message + ex.InnerException, JibeErrorLevel.ERROR);
             }
         }
-		
+
         public override void SendCustomData(Dictionary<string, string> dataToSend)
         {
             SFSObject data = new SFSObject();
@@ -844,7 +848,7 @@ namespace ReactionGrid.Jibe
                 }
             }
         }
-		
+
         public void SendPrivateCustomData(Dictionary<string, string> dataToSend, ICollection<User> targets)
         {
             SFSObject data = new SFSObject();
@@ -886,7 +890,7 @@ namespace ReactionGrid.Jibe
                 }
             }
         }
-		
+
         #endregion
 
     }

@@ -186,26 +186,7 @@ public class ChooseAvatar : MonoBehaviour
         }
 
         Debug.Log(config.Room + " " + config.Zone + " " + config.ServerIP + " " + config.ServerPort.ToString() + " " + config.RoomPassword + " " + config.ServerPlatform.ToString());
-		
-		// Prefetch policy from designated socket server
-		// only for web clients
-		if( Application.platform == RuntimePlatform.WindowsWebPlayer || 
-		   Application.platform == RuntimePlatform.OSXWebPlayer ||
-		   Application.platform == RuntimePlatform.WindowsEditor ||
-		   Application.platform == RuntimePlatform.OSXEditor) 
-		{
-            bool success = Security.PrefetchSocketPolicy(config.ServerIP, config.ServerPort);
-            if (!success)
-            {
-                Debug.Log("Prefetch policy from network server failed, trying standard policy server port " + config.PolicyServerPort);
-                Security.PrefetchSocketPolicy(config.ServerIP, config.PolicyServerPort);
-            }
-            else
-            {
-                Debug.Log("Prefetch policy succeeded from " + config.ServerPort);
-            }
-        }
-		
+
         if (!JibeComms.IsInitialized())
         {
             try
