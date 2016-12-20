@@ -15,6 +15,7 @@ public class JibeConfig : MonoBehaviour
     public string Zone = "ENTER_ZONE_NAME";
     public string ServerIP = "ENTER_SERVER_IP";
     public int ServerPort = 0;
+	public int WebSocketPort = 8888;
     public string RoomPassword = "ENTER_ROOM_PASSWORD";
     public string[] RoomList = new string[0];
     public string UserDataConnString = "";

@@ -199,7 +199,11 @@ public class ChooseAvatar : MonoBehaviour
                         jibeServerInstance = new JibePhotonServer(config.ServerIP, config.ServerPort, config.Zone, config.Room, config.DataSendRate, config.DataSendRate, config.debugLevel, Debug.Log, Debug.LogWarning, Debug.LogError);
                         break;
                     case SupportedServers.JibeSFS2X:
-                        jibeServerInstance = new JibeSFS2XServer(config.ServerIP, config.ServerPort, config.Zone, config.Room, config.RoomPassword, false, config.DataSendRate, config.DataSendRate, config.debugLevel, Debug.Log, Debug.LogWarning, Debug.LogError, config.HttpPort);
+						int port = config.ServerPort;
+						#if UNITY_WEBGL
+							port = config.WebSocketPort;
+						#endif
+                        jibeServerInstance = new JibeSFS2XServer(config.ServerIP, port, config.Zone, config.Room, config.RoomPassword, false, config.DataSendRate, config.DataSendRate, config.debugLevel, Debug.Log, Debug.LogWarning, Debug.LogError, config.HttpPort);
                         break;
                 }
 
