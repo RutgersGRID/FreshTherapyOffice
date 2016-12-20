@@ -1,22 +1,91 @@
 <!doctype html>
 <html lang="en-us">
-  <head>
+
+<head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Unity WebGL Player | %UNITY_WEB_NAME%</title>
     <link rel="stylesheet" href="TemplateData/style.css">
     <link rel="shortcut icon" href="TemplateData/favicon.ico" />
     <script src="TemplateData/UnityProgress.js"></script>
-  </head>
-  <body class="template">
+    <script src="https://static.opentok.com/v2/js/opentok.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="/js/opentok2vivox.js"></script>
+    <script type="text/javascript" src="/js/otconfig.js"></script>
+    <script type="text/javascript">
+        var apikey = "10120602";
+        var room = "middle";
+        var currentRoom = "middle";
+        var sessionids = {
+            "union": "1_MX4xMDEyMDYwMn4xMjcuMC4wLjF-MTQyODUxNjU2NTYzM34vRTlJRzg2UEdJeFYvQVZrMloyWDJYTEh-fg",
+            "management": "2_MX4xMDEyMDYwMn4xMjcuMC4wLjF-MTQyODUxNjU2NTQ0OX5IQUkrUmQ1aHFMQ1ZyS1kySCtMWk9SY3l-fg",
+            "middle": "1_MX4xMDEyMDYwMn4xMjcuMC4wLjF-MTQyODUxNjU2NTc0Nn5YTXQ4aXpFUHBiQnBXN3FRbmlKNEZvMW9-fg"
+        };
+        var tokens = {};
+        var sessions = {};
+
+        console.log("Joining:" + room);
+    </script>
+    <script type="text/javascript">
+        //<![CDATA[
+
+        //request from unity to get name of smartfox room
+        function GetUnityRoom() {
+            GetUnity().SendMessage("Init", "Init", "RoomOne");
+        }
+        function GetRoomName() {
+            alert("GetRoomName");
+        }
+
+        function GetUserName() {
+            alert("GetUserName");
+        }
+
+        function GetUserUUID() {
+            alert("GetUserUUID");
+        }
+
+        function GetDynamicRoomId() {
+            alert("GetDynamicRoomId");
+        }
+
+
+        $(document).ready(function() {
+            $('body > div:nth-child(2) > div.padding > div:nth-child(3) > div').attr("class", "");
+            $('div').remove('#leftNavBar');
+            $('#leftNavBar').detach();
+            //   VivoxInstall();
+            //DisplayChatBox("ContractPlaque");
+            $('#ChatHistory').hide();
+            $('#ToggleChat').hide();
+            $('#ToggleChat').click(function() {
+                $('#ChatHistory').slideToggle('medium');
+            });
+        });
+        //]]>
+    </script>
+</head>
+
+<body class="template">
     <p class="header"><span>Unity WebGL Player | </span>%UNITY_WEB_NAME%</p>
     <div class="template-wrap clear">
-    <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" height="%UNITY_HEIGHT%px" width="%UNITY_WIDTH%px"></canvas>
-      <div class="logo"></div>
-      <div class="fullscreen"><img src="TemplateData/fullscreen.png" width="38" height="38" alt="Fullscreen" title="Fullscreen" onclick="SetFullscreen(1);" /></div>
-      <div class="title">%UNITY_WEB_NAME%</div>
+        <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" height="%UNITY_HEIGHT%px" width="%UNITY_WIDTH%px"></canvas>
+        <div class="logo"></div>
+        <div class="fullscreen"><img src="TemplateData/fullscreen.png" width="38" height="38" alt="Fullscreen" title="Fullscreen" onclick="SetFullscreen(1);" /></div>
+        <div class="title">%UNITY_WEB_NAME%</div>
+    </div>
+    <div id="room1" class="well" style=" float:left;">
+        <h2 id="rooms">Room:</h2>
+        <div id="OnlineUsers"></div>
+
+        <div id="opentok" class="well">
+            <div id="devicePanelContainer"></div>
+            <div id="publisherContainer" style="display: none;"></div>
+            <div id="streamsContainer" style="overflow: auto;">
+        </div>
     </div>
     <p class="footer">&laquo; created with <a href="http://unity3d.com/" title="Go to unity3d.com">Unity</a> &raquo;</p>
     %UNITY_WEBGL_LOADER_GLUE%
-  </body>
+</body>
+
 </html>
